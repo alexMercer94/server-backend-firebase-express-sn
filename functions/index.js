@@ -1,53 +1,30 @@
 const functions = require('firebase-functions');
-const admin = require('firebase-admin');
+const app = require('express')();
 
-admin.initializeApp();
-const express = require('express');
-const app = express();
+const { getAllScreams, postOneScream } = require('./handlers/screams');
+const { signup, login } = require('./handlers/users');
+const FBAuth = require('./util/fbAuth');
 
-app.get('/screams', (req, res) => {
-    admin
-        .firestore()
-        .collection('screams')
-        .orderBy('createdAt', 'desc')
-        .get()
-        .then(data => {
-            let screams = [];
-            data.forEach(doc => {
-                screams.push({
-                    screamId: doc.id,
-                    body: doc.data().body,
-                    userHandle: doc.data().userHandle.userHandle,
-                    createdAt: doc.data().createdAt
-                });
-            });
-            return res.json(screams);
-        })
-        .catch(err => console.error(err));
-});
+// * `Scream` Routes
+/**
+ * Route to get `Screams`
+ */
+app.get('/screams', getAllScreams);
 
-app.post('/scream', (req, res) => {
-    if (req.method !== 'POST') {
-        return res.status(400).json({ error: 'Method not allowed' });
-    }
+/**
+ * Route to post one `Scream`
+ */
+app.post('/scream', FBAuth, postOneScream);
 
-    const newScream = {
-        body: req.body.body,
-        userHandle: req.body.userHandle,
-        createdAt: new Date().toISOString()
-    };
+// * Users Routes
+/**
+ * Signup Route
+ */
+app.post('/signup', signup);
 
-    admin
-        .firestore()
-        .collection('screams')
-        .add(newScream)
-        .then(doc => {
-            res.json({ message: `Document ${doc.id} created successfully.` });
-        })
-        .catch(err => {
-            res.status(500).json({ error: 'Something went wrong' });
-            console.error(err);
-        });
-});
+/**
+ * Route to login
+ */
+app.post('/login', login);
 
 exports.api = functions.https.onRequest(app);
