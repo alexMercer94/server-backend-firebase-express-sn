@@ -91,7 +91,8 @@ exports.login = (req, res) => {
 exports.addUserDetails = (req, res) => {
     let userDetails = reduceUserDetails(req.body);
 
-    db.doc(`/users/${req.user.handle}`)
+    db.collection('users')
+        .doc(req.user.handle)
         .update(userDetails)
         .then(() => {
             return res.json({ message: 'Details added successfully' });
@@ -104,7 +105,8 @@ exports.addUserDetails = (req, res) => {
 // Get any user's details
 exports.getUserDetails = (req, res) => {
     let userData = {};
-    db.doc(`/users/${req.params.handle}`)
+    db.collection('users')
+        .doc(req.params.handle)
         .get()
         .then(doc => {
             if (doc.exists) {
@@ -157,14 +159,19 @@ exports.getAuthenticatedUser = (req, res) => {
             data.forEach(doc => {
                 userData.likes.push(doc.data());
             });
-            return db
+            /*  return db
                 .collection('notifications')
                 .where('recipient', '==', req.user.handle)
                 .orderBy('createdAt', 'desc')
                 .limit(10)
-                .get();
+                .get(); */
+            return res.json(userData);
         })
-        .then(data => {
+        .catch(err => {
+            console.error(err);
+            return res.status(500).json({ error: err.code });
+        });
+    /* .then(data => {
             userData.notifications = [];
             data.forEach(doc => {
                 userData.notifications.push({
@@ -178,11 +185,7 @@ exports.getAuthenticatedUser = (req, res) => {
                 });
             });
             return res.json(userData);
-        })
-        .catch(err => {
-            console.error(err);
-            return res.status(500).json({ error: err.code });
-        });
+        }) */
 };
 // Upload a profile image for user
 exports.uploadImage = (req, res) => {
@@ -241,7 +244,7 @@ exports.uploadImage = (req, res) => {
 exports.markNotificationsRead = (req, res) => {
     let batch = db.batch();
     req.body.forEach(notificationId => {
-        const notification = db.doc(`/notifications/${notificationId}`);
+        const notification = db.collection('notifications').doc(notificationId);
         batch.update(notification, { read: true });
     });
     batch
