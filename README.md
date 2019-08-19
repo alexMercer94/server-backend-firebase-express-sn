@@ -7,3 +7,7 @@
 `````
 firebase deploy
 `````
+
+## API Base URL
+
+https://us-central1-social-network-react-2f9ef.cloudfunctions.net/api

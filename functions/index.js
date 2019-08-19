@@ -30,7 +30,7 @@ const {
 app.get('/screams', getAllScreams);
 app.post('/scream', FBAuth, postOneScream);
 app.get('/scream/:screamId', getScream);
-// app.delete('/scream/:screamId', FBAuth, deleteScream);
+app.delete('/scream/:screamId', FBAuth, deleteScream);
 app.get('/scream/:screamId/like', FBAuth, likeScream);
 app.get('/scream/:screamId/unlike', FBAuth, unlikeScream);
 app.post('/scream/:screamId/comment', FBAuth, commentOnScream);
@@ -67,6 +67,7 @@ exports.createNotificationOnLike = functions
             })
             .catch(err => console.error(err));
     });
+
 exports.deleteNotificationOnUnLike = functions
     .region('us-central1')
     .firestore.document('likes/{id}')
@@ -79,6 +80,7 @@ exports.deleteNotificationOnUnLike = functions
                 return;
             });
     });
+
 exports.createNotificationOnComment = functions
     .region('us-central1')
     .firestore.document('comments/{id}')

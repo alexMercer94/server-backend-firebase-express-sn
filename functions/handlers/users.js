@@ -105,8 +105,7 @@ exports.addUserDetails = (req, res) => {
 // Get any user's details
 exports.getUserDetails = (req, res) => {
     let userData = {};
-    db.collection('users')
-        .doc(req.params.handle)
+    db.doc(`/users/${req.params.handle}`)
         .get()
         .then(doc => {
             if (doc.exists) {
@@ -140,6 +139,7 @@ exports.getUserDetails = (req, res) => {
             return res.status(500).json({ error: err.code });
         });
 };
+
 // Get own user details
 exports.getAuthenticatedUser = (req, res) => {
     let userData = {};
@@ -159,19 +159,14 @@ exports.getAuthenticatedUser = (req, res) => {
             data.forEach(doc => {
                 userData.likes.push(doc.data());
             });
-            /*  return db
+            return db
                 .collection('notifications')
                 .where('recipient', '==', req.user.handle)
                 .orderBy('createdAt', 'desc')
                 .limit(10)
-                .get(); */
-            return res.json(userData);
+                .get();
         })
-        .catch(err => {
-            console.error(err);
-            return res.status(500).json({ error: err.code });
-        });
-    /* .then(data => {
+        .then(data => {
             userData.notifications = [];
             data.forEach(doc => {
                 userData.notifications.push({
@@ -185,8 +180,13 @@ exports.getAuthenticatedUser = (req, res) => {
                 });
             });
             return res.json(userData);
-        }) */
+        })
+        .catch(err => {
+            console.error(err);
+            return res.status(500).json({ error: err.code });
+        });
 };
+
 // Upload a profile image for user
 exports.uploadImage = (req, res) => {
     const BusBoy = require('busboy');
